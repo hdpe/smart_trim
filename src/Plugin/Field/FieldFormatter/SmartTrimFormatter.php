@@ -10,6 +10,8 @@ namespace Drupal\smart_trim\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Utility\Unicode;
+use Drupal\smart_trim\Truncate\TruncateHTML;
 
 /**
  * Plugin implementation of the 'smart_trim' formatter.
@@ -44,7 +46,8 @@ class SmartTrimFormatter extends FormatterBase {
       'trim_type' => 'chars',
       'trim_suffix' => '',
       'more_link' => 0,
-      'more_text' => '',
+      'more_class' => 'more-link',
+      'more_text' => 'More',
       'summary_handler' => 'full',
       'trim_options' => array(),
     ) + parent::defaultSettings();
@@ -101,7 +104,7 @@ class SmartTrimFormatter extends FormatterBase {
       '#description' => t('If displaying more link, enter the text for the link.'),
     );
 
-    if ($this->fieldDefinition->getType() == 'text_with_summary'){
+    if ($this->fieldDefinition->getType() == 'text_with_summary') {
       $element['summary_handler'] = array(
         '#title' => t('Summary'),
         '#type' => 'select',
@@ -131,10 +134,15 @@ class SmartTrimFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
+    $unicode = new Unicode();
     $summary = array();
+    $type = t('words');
+    if ($this->getSetting('trim_type') == 'chars') {
+      $type = t('characters');
+    }
+    $trim_string = $this->getSetting('trim_length') . ' ' . $type;
 
-    $trim_string = $this->getSetting('trim_length') . ' ' . (($this->getSetting('trim_type') == 'chars') ? t('characters') : t('words'));
-    if (drupal_strlen(trim($this->getSetting('trim_suffix')))) {
+    if ($unicode->strlen((trim($this->getSetting('trim_suffix'))))) {
       $trim_string .= " " . t("with suffix");
     }
     if ($this->getSetting('more_link')) {
@@ -151,8 +159,6 @@ class SmartTrimFormatter extends FormatterBase {
   public function viewElements(FieldItemListInterface $items) {
 
     $element = array();
-    $settings = $this->getSettings();
-    $setting_summary_handler = $this->getSetting('summary_handler');
     $setting_trim_options = $this->getSetting('trim_options');
     $entity = $items->getEntity();
 
@@ -164,77 +170,51 @@ class SmartTrimFormatter extends FormatterBase {
       else {
         $output = $item->processed;
       }
-      $char_delta = drupal_strlen(trim($this->getSetting('trim_suffix')));
 
       // Process additional options (currently only HTML on/off)
       if (!empty($setting_trim_options)) {
         if (!empty($setting_trim_options['text'])) {
-          // Strip tags
+          // Strip tags.
           $output = strip_tags(str_replace('<', ' <', $output));
 
-          // Strip out line breaks
+          // Strip out line breaks.
           $output = preg_replace('/\n|\r|\t/m', ' ', $output);
 
-          // Strip out non-breaking spaces
+          // Strip out non-breaking spaces.
           $output = str_replace('&nbsp;', ' ', $output);
           $output = str_replace("\xc2\xa0", ' ', $output);
 
-          // Strip out extra spaces
+          // Strip out extra spaces.
           $output = trim(preg_replace('/\s\s+/', ' ', $output));
         }
       }
 
-      // Make the trim, provided we're not showing a full summary
-      $shortened = FALSE;
+      // Make the trim, provided we're not showing a full summary.
       if ($this->getSetting('summary_handler') != 'full' || empty($item->summary)) {
+        $truncate = new TruncateHTML();
+        $length = $this->getSetting('trim_length');
+        $ellipse = $this->getSetting('trim_suffix');
         if ($this->getSetting('trim_type') == 'words') {
-          //only bother with this is we have to
-          if ($this->getSetting('trim_length') < str_word_count($output)) {
-            //use \s or use PREG_CLASS_UNICODE_WORD_BOUNDARY?
-            $words = preg_split('/\s/', $output, NULL, PREG_SPLIT_NO_EMPTY);
-            $output2 = implode(" ", array_slice($words, 0,  $this->getSetting('trim_length')));
-            $output2 = _filter_htmlcorrector($output2);
-          }
-          //field contained fewer words than we're trimming at, so do nothing
-          else {
-            $output2 = $output;
-          }
+          $output = $truncate->truncateWords($output, $length, $ellipse);
         }
         else {
-          //See https://api.drupal.org/api/drupal/core!modules!text!text.module/function/text_summary/8
-          //text_summary is smart about looking for paragraphs, sentences,
-          //etc, not strictly just length. Uses truncate_utf8 as well
-          $output2 = text_summary($output, $item->format, $this->getSetting('trim_length'));
+          $output = $truncate->truncateChars($output, $length, $ellipse);
         }
-
-        //verify if we actually performed any shortening
-        if (drupal_strlen($output) != drupal_strlen($output2)) {
-          $shortened = TRUE;
-        }
-        $output = $output2;
       }
 
-      // Only include the extension if the text was truncated
-      $extension = '';
-      if ($shortened) {
-        $extension = $this->getSetting('trim_suffix');
-      }
-      // Don't duplicate period at end of text and beginning of extension
-      if (substr($output, -1, 1) == '.' && substr($extension, 0, 1) == '.') {
-        $extension = substr($extension, 1);
-      }
       // Add the link, if there is one!
-      $uri = $entity->uri();
+      $link = '';
+      $uri = $entity->url();
       // But wait! Don't add a more link if the field ends in <!--break-->
       if ($uri && $this->getSetting('more_link') && strpos(strrev($output), strrev('<!--break-->')) !== 0) {
-        $extension .= l(t($this->getSetting('more_text')), $uri['path'], array('html' => TRUE, 'attributes' => array('class' => array('more-link'))));
+        $link = t('<a href="@uri" class="@class">@text</a>', array(
+          '@uri' => $uri,
+          '@class' => $this->getSetting('more_class'),
+          '@text' => $this->getSetting('more_text'),
+        ));
       }
-
-      $output_appended = preg_replace('#^(.*)(\s?)(</[^>]+>)$#Us', '$1' . $extension . '$3', $output);
-
-      //check if the regex did anything. if not, append manually
-      if ($output_appended == $output) $output_appended = $output . $extension;
-      $element[$delta] = array('#markup' => $output_appended);
+      $output .= $link;
+      $element[$delta] = array('#markup' => $output);
 
     }
 
