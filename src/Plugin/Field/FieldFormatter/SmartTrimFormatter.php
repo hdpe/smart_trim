@@ -156,7 +156,7 @@ class SmartTrimFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode = NULL) {
 
     $element = array();
     $setting_trim_options = $this->getSetting('trim_options');
