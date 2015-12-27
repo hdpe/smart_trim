@@ -10,6 +10,7 @@ namespace Drupal\smart_trim\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Component\Utility\Unicode;
 use Drupal\smart_trim\Truncate\TruncateHTML;
 
@@ -171,7 +172,7 @@ class SmartTrimFormatter extends FormatterBase {
         $output = $item->processed;
       }
 
-      // Process additional options (currently only HTML on/off)
+      // Process additional options (currently only HTML on/off).
       if (!empty($setting_trim_options)) {
         if (!empty($setting_trim_options['text'])) {
           // Strip tags.
@@ -204,20 +205,25 @@ class SmartTrimFormatter extends FormatterBase {
 
       // Add the link, if there is one!
       $link = '';
-      $uri = $entity->url();
-      // But wait! Don't add a more link if the field ends in <!--break-->
+      $uri = $entity->toUrl();
+      // But wait! Don't add a more link if the field ends in <!--break-->.
       if ($uri && $this->getSetting('more_link') && strpos(strrev($output), strrev('<!--break-->')) !== 0) {
-        $link = t('<a href="@uri" class="@class">@text</a>', array(
-          '@uri' => $uri,
-          '@class' => $this->getSetting('more_class'),
-          '@text' => $this->getSetting('more_text'),
-        ));
+        $more = $this->getSetting('more_text');
+        $class = $this->getSetting('more_text');
+
+        $project_link = Link::fromTextAndUrl($more, $uri);
+        $project_link = $project_link->toRenderable();
+        $project_link['#attributes'] = array(
+          'class' => array(
+            $class,
+          ),
+        );
+        $link = render($project_link);
       }
       $output .= $link;
       $element[$delta] = array('#markup' => $output);
-
     }
-
     return $element;
   }
+
 }
