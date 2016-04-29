@@ -161,11 +161,11 @@ class SmartTrimFormatter extends FormatterBase {
 
     $element = array();
     $setting_trim_options = $this->getSetting('trim_options');
+    $settings_summary_handler = $this->getSetting('summary_handler');
     $entity = $items->getEntity();
 
     foreach ($items as $delta => $item) {
-
-      if (!empty($settings_summary_handler) && $settings_summary_handler != 'ignore' && !empty($item->summary)) {
+      if ($settings_summary_handler != 'ignore' && !empty($item->summary)) {
         $output = $item->summary_processed;
       }
       else {

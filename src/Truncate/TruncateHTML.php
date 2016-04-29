@@ -25,6 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace Drupal\smart_trim\Truncate;
 
+use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Unicode;
+
 /**
  * Class TruncateHTML
  */
@@ -43,7 +46,7 @@ class TruncateHTML {
    */
   public $limit;
   /**
-   * @type
+   * @type \DOMElement
    */
   public $startNode;
   /**
@@ -71,11 +74,10 @@ class TruncateHTML {
    */
   private function init($html, $limit, $ellipsis) {
 
-    $dom = new \DOMDocument();
-    $dom->loadHTML($html);
+    $dom = Html::load($html);
 
     // The body tag node, our html fragment is automatically wrapped in
-    // a <html><body> etc... skeleton which we will strip later.
+    // a <html><body> etc.
     $this->startNode = $dom->getElementsByTagName("body")->item(0);
     $this->limit = $limit;
     $this->ellipsis = $ellipsis;
@@ -104,15 +106,10 @@ class TruncateHTML {
     if ($limit <= 0 || $limit >= strlen(strip_tags($html))) {
       return $html;
     }
-
     $dom = $this->init($html, $limit, $ellipsis);
-
     // Pass the body node on to be processed.
     $this->domNodeTruncateChars($this->startNode);
-
-    // Hack to remove the html skeleton that is added,
-    // unfortunately this can't be avoided unless php > 5.3.
-    return preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $dom->saveHTML());
+    return Html::serialize($dom);
   }
 
   /**
@@ -137,9 +134,7 @@ class TruncateHTML {
     $dom = $this->init($html, $limit, $ellipsis);
     // Pass the body node on to be processed.
     $this->domNodeTruncateWords($this->startNode);
-    // Hack to remove the html skeleton that is added,
-    // unfortunately this can't be avoided unless php > 5.3.
-    return preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $dom->saveHTML());
+    return Html::serialize($dom);
   }
 
   /**
@@ -160,16 +155,18 @@ class TruncateHTML {
         $this->domNodeTruncateChars($node);
       }
       else {
-        if (($this->charCount + strlen($node->nodeValue)) >= $this->limit) {
+        $text = html_entity_decode($node->nodeValue, ENT_QUOTES, 'UTF-8');
+        $length = Unicode::strlen($text);
+        if (($this->charCount + $length) >= $this->limit) {
           // We have found our end point.
-          $node->nodeValue = substr($node->nodeValue, 0, $this->limit - $this->charCount);
+          $node->nodeValue = Unicode::substr($text, 0, $this->limit - $this->charCount);
           $this->removeProceedingNodes($node);
           $this->insertEllipsis($node);
           $this->foundBreakpoint = TRUE;
           return;
         }
         else {
-          $this->charCount += strlen($node->nodeValue);
+          $this->charCount += $length;
         }
       }
     }
@@ -198,7 +195,12 @@ class TruncateHTML {
         if (($this->wordCount + $cur_count) >= $this->limit) {
           // We have found our end point.
           if ($cur_count > 1 && ($this->limit - $this->wordCount) < $cur_count) {
-            $words = preg_split("/[\n\r\t ]+/", $node->nodeValue, ($this->limit - $this->wordCount) + 1, PREG_SPLIT_NO_EMPTY|PREG_SPLIT_OFFSET_CAPTURE);
+            // Note that PREG_SPLIT_OFFSET_CAPTURE and UTF-8 is interesting.
+            // preg_split() works on the string as an array of bytes therefore
+            // in order to use it's results we need to use non unicode aware
+            // functions.
+            // @see https://bugs.php.net/bug.php?id=67487
+            $words = preg_split("/[\n\r\t ]+/", $node->nodeValue, ($this->limit - $this->wordCount) + 1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE);
             end($words);
             $last_word = prev($words);
             $node->nodeValue = substr($node->nodeValue, 0, $last_word[1] + strlen($last_word[0]));
@@ -284,4 +286,5 @@ class TruncateHTML {
     $words = preg_split("/[\n\r\t ]+/", $text, -1, PREG_SPLIT_NO_EMPTY);
     return count($words);
   }
+
 }
