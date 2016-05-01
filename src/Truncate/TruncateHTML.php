@@ -1,27 +1,30 @@
 <?php
+
 /**
  * @file
- * Contains trim functionality as noted on
+ * Contains trim functionality.
+ *
+ * As noted on
  *    http://www.pjgalbraith.com/2011/11/truncating-text-html-with-php/
- * with some modifications to adhear to the Drupal Coding Standards.
+ * with some modifications to adhere to the Drupal Coding Standards.
  */
 
 /*
- Copyright 2011  Patrick Galbraith  (email : patrick.j.galbraith@gmail.com)
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License, version 2, as
-published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ * Copyright 2011  Patrick Galbraith  (email : patrick.j.galbraith@gmail.com)
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, version 2, as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 namespace Drupal\smart_trim\Truncate;
 
@@ -29,7 +32,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Unicode;
 
 /**
- * Class TruncateHTML
+ * Class TruncateHTML.
  */
 class TruncateHTML {
 

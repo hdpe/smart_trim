@@ -1,18 +1,29 @@
 <?php
 
-namespace Drupal\Tests\smart_test\Unit;
+/**
+ * @file
+ * Contains Drupal\smart_trim|Tests\TruncateHTMLTest.
+ */
+
+namespace Drupal\smart_trim\Tests;
 
 use Drupal\smart_trim\Truncate\TruncateHTML;
 use Drupal\Tests\UnitTestCase;
 
 /**
+ * Unit Test coverage.
+ *
  * @coversDefaultClass \Drupal\smart_trim\Truncate\TruncateHTML
- * @group entity
+ *
+ * @group smart_trim
  */
 class TruncateHTMLTest extends UnitTestCase {
 
   /**
+   * Testing truncateChars.
+   *
    * @covers ::truncateChars
+   *
    * @dataProvider truncateCharsDataProvider
    */
   public function testTruncateChars($html, $limit, $ellipsis, $expected) {
@@ -29,25 +40,28 @@ class TruncateHTMLTest extends UnitTestCase {
         'A test string',
         5,
         '…',
-        'A tes…'
+        'A tes…',
       ],
       [
-      '“I like funky quotes”',
+        '“I like funky quotes”',
         5,
         '',
-        '“I li'
+        '“I li',
       ],
       [
         '“I <em>really, really</em> like funky quotes”',
         14,
         '',
-        '“I <em>really, rea</em>'
+        '“I <em>really, rea</em>',
       ],
     ];
   }
 
   /**
-   * @covers ::truncateChars
+   * Covers TruncateWords.
+   *
+   * @covers ::truncateWords
+   *
    * @dataProvider truncateWordsDataProvider
    */
   public function testTruncateWords($html, $limit, $ellipsis, $expected) {
@@ -64,33 +78,33 @@ class TruncateHTMLTest extends UnitTestCase {
         'A test string',
         2,
         '…',
-        'A test…'
+        'A test…',
       ],
       [
         'A test string',
         3,
         '…',
-        'A test string'
+        'A test string',
       ],
       [
         '“I like funky quotes”',
         2,
         '',
-        '“I like'
+        '“I like',
       ],
       [
         '“I like funky quotes”',
         4,
         '',
-        '“I like funky quotes”'
+        '“I like funky quotes”',
       ],
       [
         '“I <em>really, really</em> like funky quotes”',
         2,
         '',
-        '“I <em>really,</em>'
+        '“I <em>really,</em>',
       ],
-
     ];
   }
+
 }
