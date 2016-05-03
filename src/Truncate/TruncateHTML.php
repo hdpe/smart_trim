@@ -37,29 +37,46 @@ use Drupal\Component\Utility\Unicode;
 class TruncateHTML {
 
   /**
+   * Total characters.
+   *
    * @type int
    */
-  public $charCount = 0;
+  protected $charCount = 0;
+
   /**
+   * Total words.
+   *
    * @type int
    */
-  public $wordCount = 0;
+  protected $wordCount = 0;
+
   /**
+   * Character / Word limit.
+   *
    * @type int
    */
-  public $limit;
+  protected $limit;
+
   /**
+   * Element to start on.
+   *
    * @type \DOMElement
    */
-  public $startNode;
+  protected $startNode;
+
   /**
+   * Ellipsis character.
+   *
    * @type string
    */
-  public $ellipsis;
+  protected $ellipsis;
+
   /**
+   * Did we find the breakpoint?
+   *
    * @type bool
    */
-  public $foundBreakpoint = FALSE;
+  protected $foundBreakpoint = FALSE;
 
 
   /**
@@ -75,7 +92,7 @@ class TruncateHTML {
    * @return \DOMDocument
    *   Prepared DOMDocument to work with.
    */
-  private function init($html, $limit, $ellipsis) {
+  protected function init($html, $limit, $ellipsis) {
 
     $dom = Html::load($html);
 
@@ -146,7 +163,7 @@ class TruncateHTML {
    * @param \DOMNode $domnode
    *   Object to be truncated.
    */
-  private function domNodeTruncateChars(\DOMNode $domnode) {
+  protected function domNodeTruncateChars(\DOMNode $domnode) {
 
     foreach ($domnode->childNodes as $node) {
 
@@ -181,7 +198,7 @@ class TruncateHTML {
    * @param \DOMNode $domnode
    *   Object to be truncated.
    */
-  private function domNodeTruncateWords(\DOMNode $domnode) {
+  protected function domNodeTruncateWords(\DOMNode $domnode) {
 
     foreach ($domnode->childNodes as $node) {
 
@@ -227,7 +244,7 @@ class TruncateHTML {
    * @param \DOMNode $domnode
    *   Node to be altered.
    */
-  private function removeProceedingNodes(\DOMNode $domnode) {
+  protected function removeProceedingNodes(\DOMNode $domnode) {
     $nextnode = $domnode->nextSibling;
 
     if ($nextnode !== NULL) {
@@ -255,7 +272,7 @@ class TruncateHTML {
    * @param \DOMNode $domnode
    *   Node to be altered.
    */
-  private function insertEllipsis(\DOMNode $domnode) {
+  protected function insertEllipsis(\DOMNode $domnode) {
     // HTML tags to avoid appending the ellipsis to.
     $avoid = array('a', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5');
 
@@ -285,7 +302,7 @@ class TruncateHTML {
    * @return int
    *   Results
    */
-  private function countWords($text) {
+  protected function countWords($text) {
     $words = preg_split("/[\n\r\t ]+/", $text, -1, PREG_SPLIT_NO_EMPTY);
     return count($words);
   }
