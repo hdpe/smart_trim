@@ -209,7 +209,7 @@ class SmartTrimFormatter extends FormatterBase {
       // But wait! Don't add a more link if the field ends in <!--break-->.
       if ($uri && $this->getSetting('more_link') && strpos(strrev($output), strrev('<!--break-->')) !== 0) {
         $more = $this->getSetting('more_text');
-        $class = $this->getSetting('more_text');
+        $class = $this->getSetting('more_class');
 
         $project_link = Link::fromTextAndUrl($more, $uri);
         $project_link = $project_link->toRenderable();
