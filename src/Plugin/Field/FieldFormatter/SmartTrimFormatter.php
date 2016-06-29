@@ -205,7 +205,8 @@ class SmartTrimFormatter extends FormatterBase {
 
       // Add the link, if there is one!
       $link = '';
-      $uri = $entity->toUrl();
+      $uri = $entity->hasLinkTemplate('canonical') ? $entity->toUrl() : NULL;
+
       // But wait! Don't add a more link if the field ends in <!--break-->.
       if ($uri && $this->getSetting('more_link') && strpos(strrev($output), strrev('<!--break-->')) !== 0) {
         $more = $this->getSetting('more_text');
