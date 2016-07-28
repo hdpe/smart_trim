@@ -61,7 +61,7 @@ class SmartTrimFormatter extends FormatterBase {
     $element = parent::settingsForm($form, $form_state);
 
     $element['trim_length'] = array(
-      '#title' => t('Trim length'),
+      '#title' => $this->t('Trim length'),
       '#type' => 'textfield',
       '#size' => 10,
       '#default_value' => $this->getSetting('trim_length'),
@@ -70,49 +70,49 @@ class SmartTrimFormatter extends FormatterBase {
     );
 
     $element['trim_type'] = array(
-      '#title' => t('Trim units'),
+      '#title' => $this->t('Trim units'),
       '#type' => 'select',
       '#options' => array(
-        'chars' => t("Characters"),
-        'words' => t("Words"),
+        'chars' => $this->t("Characters"),
+        'words' => $this->t("Words"),
       ),
       '#default_value' => $this->getSetting('trim_type'),
     );
 
     $element['trim_suffix'] = array(
-      '#title' => t('Suffix'),
+      '#title' => $this->t('Suffix'),
       '#type' => 'textfield',
       '#size' => 10,
       '#default_value' => $this->getSetting('trim_suffix'),
     );
 
     $element['more_link'] = array(
-      '#title' => t('Display more link?'),
+      '#title' => $this->t('Display more link?'),
       '#type' => 'select',
       '#options' => array(
-        0 => t("No"),
-        1 => t("Yes"),
+        0 => $this->t("No"),
+        1 => $this->t("Yes"),
       ),
       '#default_value' => $this->getSetting('more_link'),
-      '#description' => t('Displays a link to the entity (if one exists)'),
+      '#description' => $this->t('Displays a link to the entity (if one exists)'),
     );
 
     $element['more_text'] = array(
-      '#title' => t('More link text'),
+      '#title' => $this->t('More link text'),
       '#type' => 'textfield',
       '#size' => 20,
       '#default_value' => $this->getSetting('more_text'),
-      '#description' => t('If displaying more link, enter the text for the link.'),
+      '#description' => $this->t('If displaying more link, enter the text for the link.'),
     );
 
     if ($this->fieldDefinition->getType() == 'text_with_summary') {
       $element['summary_handler'] = array(
-        '#title' => t('Summary'),
+        '#title' => $this->t('Summary'),
         '#type' => 'select',
         '#options' => array(
-          'full' => t("Use summary if present, and do not trim"),
-          'trim' => t("Use summary if present, honor trim settings"),
-          'ignore' => t("Do not use summary"),
+          'full' => $this->t("Use summary if present, and do not trim"),
+          'trim' => $this->t("Use summary if present, honor trim settings"),
+          'ignore' => $this->t("Do not use summary"),
         ),
         '#default_value' => $this->getSetting('summary_handler'),
       );
@@ -120,10 +120,10 @@ class SmartTrimFormatter extends FormatterBase {
 
     $trim_options_value = $this->getSetting('trim_options');
     $element['trim_options'] = array(
-      '#title' => t('Additional options'),
+      '#title' => $this->t('Additional options'),
       '#type' => 'checkboxes',
       '#options' => array(
-        'text' => t('Strip HTML'),
+        'text' => $this->t('Strip HTML'),
       ),
       '#default_value' => empty($trim_options_value) ? array() : $trim_options_value,
     );
@@ -137,17 +137,17 @@ class SmartTrimFormatter extends FormatterBase {
   public function settingsSummary() {
     $unicode = new Unicode();
     $summary = array();
-    $type = t('words');
+    $type = $this->t('words');
     if ($this->getSetting('trim_type') == 'chars') {
-      $type = t('characters');
+      $type = $this->t('characters');
     }
     $trim_string = $this->getSetting('trim_length') . ' ' . $type;
 
     if ($unicode->strlen((trim($this->getSetting('trim_suffix'))))) {
-      $trim_string .= " " . t("with suffix");
+      $trim_string .= " " . $this->t("with suffix");
     }
     if ($this->getSetting('more_link')) {
-      $trim_string .= ", " . t("with more link");
+      $trim_string .= ", " . $this->t("with more link");
     }
     $summary[] = $trim_string;
 
