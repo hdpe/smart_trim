@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\smart_trim\Plugin\Field\FieldFormatter\SmartTrimFormatter.
- */
-
 namespace Drupal\smart_trim\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FormatterBase;
