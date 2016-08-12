@@ -200,21 +200,27 @@ class SmartTrimFormatter extends FormatterBase {
 
       // Add the link, if there is one!
       $link = '';
-      $uri = $entity->hasLinkTemplate('canonical') ? $entity->toUrl() : NULL;
+      // The entity must have an id already. Content entities usually get their
+      // IDs by saving them. In some cases, eg: Inline Entity Form preview there
+      // is no ID until everything is saved.
+      // https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Entity!Entity.php/function/Entity%3A%3AtoUrl/8.2.x
+      if ($entity->id()) {
+        $uri = $entity->hasLinkTemplate('canonical') ? $entity->toUrl() : NULL;
 
-      // But wait! Don't add a more link if the field ends in <!--break-->.
-      if ($uri && $this->getSetting('more_link') && strpos(strrev($output), strrev('<!--break-->')) !== 0) {
-        $more = $this->getSetting('more_text');
-        $class = $this->getSetting('more_class');
+        // But wait! Don't add a more link if the field ends in <!--break-->.
+        if ($uri && $this->getSetting('more_link') && strpos(strrev($output), strrev('<!--break-->')) !== 0) {
+          $more = $this->getSetting('more_text');
+          $class = $this->getSetting('more_class');
 
-        $project_link = Link::fromTextAndUrl($more, $uri);
-        $project_link = $project_link->toRenderable();
-        $project_link['#attributes'] = array(
-          'class' => array(
-            $class,
-          ),
-        );
-        $link = render($project_link);
+          $project_link = Link::fromTextAndUrl($more, $uri);
+          $project_link = $project_link->toRenderable();
+          $project_link['#attributes'] = array(
+            'class' => array(
+              $class,
+            ),
+          );
+          $link = render($project_link);
+        }
       }
       $output .= $link;
       $element[$delta] = array('#markup' => $output);
