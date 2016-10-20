@@ -41,6 +41,8 @@ class SmartTrimFormatter extends FormatterBase {
       'trim_length' => '600',
       'trim_type' => 'chars',
       'trim_suffix' => '',
+      'wrap_output' => 0,
+      'wrap_class' => 'trimmed',
       'more_link' => 0,
       'more_class' => 'more-link',
       'more_text' => 'More',
@@ -81,13 +83,29 @@ class SmartTrimFormatter extends FormatterBase {
       '#default_value' => $this->getSetting('trim_suffix'),
     );
 
+    $element['wrap_output'] = array(
+      '#title' => $this->t('Wrap trimmed content?'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->getSetting('wrap_output'),
+      '#description' => $this->t('Adds a wrapper div to trimmed content.'),
+    );
+
+    $element['wrap_class'] = array(
+      '#title' => $this->t('Wrapped content class.'),
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#default_value' => $this->getSetting('wrap_class'),
+      '#description' => $this->t('If wrapping, define the class name here.'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="fields[body][settings_edit_form][settings][wrap_output]"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
     $element['more_link'] = array(
       '#title' => $this->t('Display more link?'),
-      '#type' => 'select',
-      '#options' => array(
-        0 => $this->t("No"),
-        1 => $this->t("Yes"),
-      ),
+      '#type' => 'checkbox',
       '#default_value' => $this->getSetting('more_link'),
       '#description' => $this->t('Displays a link to the entity (if one exists)'),
     );
@@ -98,6 +116,24 @@ class SmartTrimFormatter extends FormatterBase {
       '#size' => 20,
       '#default_value' => $this->getSetting('more_text'),
       '#description' => $this->t('If displaying more link, enter the text for the link.'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="fields[body][settings_edit_form][settings][more_link]"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
+    $element['more_class'] = array(
+      '#title' => $this->t('More link class'),
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#default_value' => $this->getSetting('more_class'),
+      '#description' => $this->t('If displaying more link, add a custom class for formatting.'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="fields[body][settings_edit_form][settings][more_link]"]' => array('checked' => TRUE),
+        ),
+      ),
     );
 
     if ($this->fieldDefinition->getType() == 'text_with_summary') {
@@ -198,6 +234,11 @@ class SmartTrimFormatter extends FormatterBase {
         }
       }
 
+      // Wrap content in container div.
+      if ($this->getSetting('wrap_output')) {
+        $output = '<div class="' . $this->getSetting('wrap_class') . '">' . $output . '</div>';
+      }
+
       // Add the link, if there is one!
       $link = '';
       // The entity must have an id already. Content entities usually get their
@@ -219,6 +260,8 @@ class SmartTrimFormatter extends FormatterBase {
               $class,
             ),
           );
+          $project_link['#prefix'] = '<div class="' . $class . '">';
+          $project_link['#suffix'] = '</div>';
           $link = render($project_link);
         }
       }
