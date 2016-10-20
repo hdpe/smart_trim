@@ -94,7 +94,7 @@ class TruncateHTML {
    */
   protected function init($html, $limit, $ellipsis) {
 
-    $dom = Html::load($html);
+    $dom = Html::load(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
 
     // The body tag node, our html fragment is automatically wrapped in
     // a <html><body> etc.
