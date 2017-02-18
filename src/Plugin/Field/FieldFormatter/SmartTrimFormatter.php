@@ -18,7 +18,9 @@ use Drupal\smart_trim\Truncate\TruncateHTML;
  *   field_types = {
  *     "text",
  *     "text_long",
- *     "text_with_summary"
+ *     "text_with_summary",
+ *     "string",
+ *     "string_long"
  *   },
  *   settings = {
  *     "trim_length" = "300",
@@ -199,8 +201,11 @@ class SmartTrimFormatter extends FormatterBase {
       if ($settings_summary_handler != 'ignore' && !empty($item->summary)) {
         $output = $item->summary_processed;
       }
-      else {
+      elseif($item->processed != NULL) {
         $output = $item->processed;
+      }
+      else {
+        $output = $item->value;
       }
 
       // Process additional options (currently only HTML on/off).
