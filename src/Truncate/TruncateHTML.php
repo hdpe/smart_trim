@@ -179,7 +179,7 @@ class TruncateHTML {
         $length = Unicode::strlen($text);
         if (($this->charCount + $length) >= $this->limit) {
           // We have found our end point.
-          $node->nodeValue = Unicode::substr($text, 0, $this->limit - $this->charCount);
+          $node->nodeValue = Unicode::truncate($text, $this->limit - $this->charCount, TRUE);
           $this->removeProceedingNodes($node);
           $this->insertEllipsis($node);
           $this->foundBreakpoint = TRUE;
