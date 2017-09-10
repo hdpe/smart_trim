@@ -157,6 +157,7 @@ class SmartTrimFormatter extends FormatterBase {
       '#type' => 'checkboxes',
       '#options' => array(
         'text' => $this->t('Strip HTML'),
+        'trim_zero' => t('Honor a zero trim length'),
       ),
       '#default_value' => empty($trim_options_value) ? array() : $trim_options_value,
     );
@@ -210,6 +211,17 @@ class SmartTrimFormatter extends FormatterBase {
 
       // Process additional options (currently only HTML on/off).
       if (!empty($setting_trim_options)) {
+        // Allow a zero length trim
+        if (!empty($setting_trim_options['trim_zero']) && $this->getSetting('trim_length') == 0) {
+          // If the summary is empty, trim to zero length.
+          if (empty($item->summary)) {
+            $output = '';
+          }
+          else if ($settings_summary_handler != 'full') {
+            $output = '';
+          }
+        }
+
         if (!empty($setting_trim_options['text'])) {
           // Strip tags.
           $output = strip_tags(str_replace('<', ' <', $output));
