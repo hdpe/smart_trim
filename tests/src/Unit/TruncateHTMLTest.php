@@ -35,19 +35,19 @@ class TruncateHTMLTest extends UnitTestCase {
         'A test string',
         5,
         '…',
-        'A tes…',
+        'A…',
       ],
       [
         '“I like funky quotes”',
         5,
         '',
-        '“I li',
+        '“I',
       ],
       [
         '“I <em>really, really</em> like funky quotes”',
         14,
         '',
-        '“I <em>really, rea</em>',
+        '“I <em>really,</em>',
       ],
     ];
   }
