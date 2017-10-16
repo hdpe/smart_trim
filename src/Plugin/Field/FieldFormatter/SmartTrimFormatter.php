@@ -7,6 +7,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Component\Utility\Unicode;
+use Drupal\smart_trim\Truncate\SentenceMode;
 use Drupal\smart_trim\Truncate\TruncateHTML;
 
 /**
@@ -42,6 +43,7 @@ class SmartTrimFormatter extends FormatterBase {
     return array(
       'trim_length' => '600',
       'trim_type' => 'chars',
+      'trim_sentence_mode' => 'none',
       'trim_suffix' => '',
       'wrap_output' => 0,
       'wrap_class' => 'trimmed',
@@ -76,6 +78,21 @@ class SmartTrimFormatter extends FormatterBase {
         'words' => $this->t("Words"),
       ),
       '#default_value' => $this->getSetting('trim_type'),
+    );
+
+    $element['trim_sentence_mode'] = array(
+      '#title' => $this->t('Trim to sentence boundaries'),
+      '#type' => 'select',
+      '#options' => array(
+        'none' => $this->t('Ignore sentences'),
+        'single' => $this->t('Maximum of one sentence'),
+      ),
+      '#default_value' => $this->getSetting('trim_sentence_mode'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="fields[body][settings_edit_form][settings][trim_type]"]' => array('value' => 'words'),
+        ),
+      ),
     );
 
     $element['trim_suffix'] = array(
@@ -177,6 +194,10 @@ class SmartTrimFormatter extends FormatterBase {
     }
     $trim_string = $this->getSetting('trim_length') . ' ' . $type;
 
+    if ($this->getSetting('trim_sentence_type') == 'single') {
+      $trim_string .= " (" . $this->t("max. 1 sentence)");
+    }
+
     if ($unicode->strlen((trim($this->getSetting('trim_suffix'))))) {
       $trim_string .= " " . $this->t("with suffix");
     }
@@ -243,8 +264,9 @@ class SmartTrimFormatter extends FormatterBase {
         $truncate = new TruncateHTML();
         $length = $this->getSetting('trim_length');
         $ellipse = $this->getSetting('trim_suffix');
+        $sentence_mode = $this->getSetting('trim_sentence_mode') == 'single' ? SentenceMode::SingleSentence : SentenceMode::None;
         if ($this->getSetting('trim_type') == 'words') {
-          $output = $truncate->truncateWords($output, $length, $ellipse);
+          $output = $truncate->truncateWords($output, $length, $ellipse, $sentence_mode);
         }
         else {
           $output = $truncate->truncateChars($output, $length, $ellipse);

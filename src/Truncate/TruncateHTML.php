@@ -71,6 +71,14 @@ class TruncateHTML {
    */
   protected $ellipsis;
 
+
+  /**
+   * How to consider sentence boundaries.
+   *
+   * @type int
+   */
+  protected $sentenceMode;
+
   /**
    * Did we find the breakpoint?
    *
@@ -88,11 +96,13 @@ class TruncateHTML {
    *   Amount of text to return.
    * @param string $ellipsis
    *   Characters to use at the end of the text.
+   * @param int $sentence_mode
+   *   The sentence trimming mode.
    *
-   * @return \DOMDocument
-   *   Prepared DOMDocument to work with.
+   * @return \DOMDocument Prepared DOMDocument to work with.
+   * Prepared DOMDocument to work with.
    */
-  protected function init($html, $limit, $ellipsis) {
+  protected function init($html, $limit, $ellipsis, $sentence_mode = SentenceMode::None) {
 
     $dom = Html::load(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
 
@@ -103,6 +113,7 @@ class TruncateHTML {
     $this->ellipsis = $ellipsis;
     $this->charCount = 0;
     $this->wordCount = 0;
+    $this->sentenceMode = $sentence_mode;
     $this->foundBreakpoint = FALSE;
 
     return $dom;
@@ -141,17 +152,19 @@ class TruncateHTML {
    *   Amount of text to allow.
    * @param string $ellipsis
    *   Characters to use at the end of the text.
+   * @param int $sentence_mode
+   *   The sentence trimming mode.
    *
    * @return mixed
    *   Resulting text.
    */
-  public function truncateWords($html, $limit, $ellipsis = '...') {
+  public function truncateWords($html, $limit, $ellipsis = '...', $sentence_mode = SentenceMode::None) {
 
     if ($limit <= 0 || $limit >= $this->countWords(strip_tags($html))) {
       return $html;
     }
 
-    $dom = $this->init($html, $limit, $ellipsis);
+    $dom = $this->init($html, $limit, $ellipsis, $sentence_mode);
     // Pass the body node on to be processed.
     $this->domNodeTruncateWords($this->startNode);
     return Html::serialize($dom);
@@ -210,6 +223,17 @@ class TruncateHTML {
         $this->domNodeTruncateWords($node);
       }
       else {
+        if ($this->sentenceMode == SentenceMode::SingleSentence) {
+          $boundary = strpos($node->nodeValue, '.');
+          if ($boundary !== FALSE) {
+            $node->nodeValue = substr($node->nodeValue, 0, $boundary + 1);
+
+            $this->removeProceedingNodes($node);
+            $this->foundBreakpoint = TRUE;
+            return;
+          }
+        }
+
         $cur_count = $this->countWords($node->nodeValue);
 
         if (($this->wordCount + $cur_count) >= $this->limit) {

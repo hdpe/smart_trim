@@ -2,6 +2,7 @@
 
 namespace Drupal\smart_trim\Tests;
 
+use Drupal\smart_trim\Truncate\SentenceMode;
 use Drupal\smart_trim\Truncate\TruncateHTML;
 use Drupal\Tests\UnitTestCase;
 
@@ -59,9 +60,9 @@ class TruncateHTMLTest extends UnitTestCase {
    *
    * @dataProvider truncateWordsDataProvider
    */
-  public function testTruncateWords($html, $limit, $ellipsis, $expected) {
+  public function testTruncateWords($html, $limit, $ellipsis, $sentence_mode, $expected) {
     $truncate = new TruncateHTML();
-    $this->assertSame($expected, $truncate->truncateWords($html, $limit, $ellipsis));
+    $this->assertSame($expected, $truncate->truncateWords($html, $limit, $ellipsis, $sentence_mode));
   }
 
   /**
@@ -73,32 +74,44 @@ class TruncateHTMLTest extends UnitTestCase {
         'A test string',
         2,
         '…',
+        SentenceMode::None,
         'A test…',
       ],
       [
         'A test string',
         3,
         '…',
+        SentenceMode::None,
         'A test string',
       ],
       [
         '“I like funky quotes”',
         2,
         '',
+        SentenceMode::None,
         '“I like',
       ],
       [
         '“I like funky quotes”',
         4,
         '',
+        SentenceMode::None,
         '“I like funky quotes”',
       ],
       [
         '“I <em>really, really</em> like funky quotes”',
         2,
         '',
+        SentenceMode::None,
         '“I <em>really,</em>',
       ],
+      [
+        "Lots. Of. Little. Sentences.",
+        2,
+        '…',
+        SentenceMode::SingleSentence,
+        'Lots.'
+      ]
     ];
   }
 
